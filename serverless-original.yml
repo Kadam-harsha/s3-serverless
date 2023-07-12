@@ -1,0 +1,18 @@
+service: resolutestudy-com
+
+provider:
+  name: aws
+  stage: dev
+
+plugins:
+  - serverless-lift
+
+
+constructs:
+  static-site-prod:
+    type: static-website
+    path: 'dist/'
+    domain: resolutestudy.sparktxweb.net
+    certificate: arn:aws:acm:us-east-1:949852668664:certificate/33e11b7e-050b-4385-9fa6-a17900828225
+    security:
+      allowIframe: true

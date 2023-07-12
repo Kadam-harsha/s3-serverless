@@ -1,0 +1,129 @@
+image: node:10.15.3
+
+definitions:
+  steps:
+    - step: &build
+        name: Build the dist
+        caches:
+          - node
+        script:
+#          - npm install
+#          - npm run build
+          - mkdir dist
+          - cp *.html dist/
+          - mv img dist/
+          - mv downloads dist/
+          - mv google-map dist/
+          - cp *.css dist/
+          - cp robots.txt dist/
+          - cp sitemap.xml dist/
+          - mv MyFontsWebfontsKit dist/
+        artifacts:
+          - dist/**
+    - step: &notify
+        name: Notify the results
+        script:
+          - pipe: atlassian/slack-notify:0.2.3
+            variables:
+              WEBHOOK_URL: $SLACK_URL
+              MESSAGE: 'Ran pipeline for $BITBUCKET_REPO_FULL_NAME branch: $BITBUCKET_BRANCH'
+  vars:
+    - prod_dist_deploy: &prod_dist_deploy_vars
+        AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY
+        AWS_SECRET_ACCESS_KEY: $AWS_SECRET
+        AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+        S3_BUCKET: 'resolutestudy-serverless-v01'
+        LOCAL_PATH: 'dist'
+        ACL: 'public-read'
+    - redirect_dist_deploy: &redirect_dist_deploy_vars
+        AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY
+        AWS_SECRET_ACCESS_KEY: $AWS_SECRET
+        AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+        S3_BUCKET: 'resolute-study-serverless-redirect'
+        LOCAL_PATH: 'dist'
+        ACL: 'public-read'        
+    - develop_dist_deploy: &develop_dist_deploy_vars
+        AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY
+        AWS_SECRET_ACCESS_KEY: $AWS_SECRET
+        AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+        S3_BUCKET: 'resolutestudy-serverless-develop'
+        LOCAL_PATH: 'dist'
+        ACL: 'public-read'
+    - staging_dist_deploy: &staging_dist_deploy_vars
+        AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY
+        AWS_SECRET_ACCESS_KEY: $AWS_SECRET
+        AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+        S3_BUCKET: 'resolutestudy-serverless-staging'
+        LOCAL_PATH: 'dist'
+        ACL: 'public-read'
+    - prod_artifact_deploy: &prod_artifact_deploy_vars
+        AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY
+        AWS_SECRET_ACCESS_KEY: $AWS_SECRET
+        AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+        S3_BUCKET: 'resolutestudy-artifacts'
+        LOCAL_PATH: 'artifact'
+#        ACL: 'public-read'
+
+pipelines:
+
+  # all branches EXCECPT master, develop, staging
+  # only builds the dist
+  # does NOTHING else
+  default:
+    - step: *build
+
+  branches:
+
+    master:
+      - step: *build
+
+      - step:
+          image: atlassian/default-image:2
+          name: Deploy dist files to S3
+          script:
+            - pipe: atlassian/aws-s3-deploy:0.3.8
+              variables: *prod_dist_deploy_vars
+              
+      - step:
+          image: atlassian/default-image:2
+          name: Deploy dist files to S3
+          script:
+            - pipe: atlassian/aws-s3-deploy:0.3.8
+              variables: *redirect_dist_deploy_vars        
+
+      - step:
+          image: atlassian/default-image:2
+          name: Deploy artifact to S3 bucket
+          script:
+            - mkdir artifact
+            - tar cvfz artifact/`date +"%Y%d%m-%H%M%S"`-$PROJECT_NAME.tar.gz dist/
+            - pipe: atlassian/aws-s3-deploy:0.3.8
+              variables: *prod_artifact_deploy_vars
+
+      - step: *notify
+
+    # develop branch deployment
+    develop:
+      - step: *build
+
+      - step:
+          image: atlassian/default-image:2
+          name: Deploy dist files to S3
+          script:
+            - pipe: atlassian/aws-s3-deploy:0.3.8
+              variables: *develop_dist_deploy_vars
+
+      - step: *notify
+
+    # staging branch deployment
+    staging:
+      - step: *build
+
+      - step:
+          image: atlassian/default-image:2
+          name: Deploy dist files to S3
+          script:
+            - pipe: atlassian/aws-s3-deploy:0.3.8
+              variables: *staging_dist_deploy_vars
+
+      - step: *notify

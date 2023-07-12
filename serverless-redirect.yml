@@ -1,0 +1,28 @@
+service: resolutestudy-com
+
+provider:
+  name: aws
+  stage: redirect
+
+plugins:
+  - serverless-lift
+
+
+constructs:
+  static-site-production:
+    type: static-website
+    path: 'dist/'
+    domain:
+      - redirect.resolutestudy.com
+    certificate: arn:aws:acm:us-east-1:949852668664:certificate/f12ad0af-6b7c-48f6-aa58-c4593af58e89
+    security:
+      allowIframe: true
+    extensions: {
+      bucket: {
+        Properties: {
+          PublicAccessBlockConfiguration: {
+            BlockPublicPolicy: false,
+          }
+        }
+      }
+    }

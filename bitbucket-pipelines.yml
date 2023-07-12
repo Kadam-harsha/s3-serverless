@@ -1,0 +1,87 @@
+image: node:lts
+
+definitions:
+  steps:
+    - step: &build
+        name: Build the dist
+        caches:
+          - node
+        script:
+#          - npm install
+#          - npm run build
+          - mkdir dist
+          - cp *.html dist/
+          - mv img dist/
+          - mv downloads dist/
+          - mv google-map dist/
+          - cp *.css dist/
+          - cp robots.txt dist/
+          - cp sitemap.xml dist/
+          - mv MyFontsWebfontsKit dist/
+        artifacts:
+          - dist/**
+    - step: &notify
+        name: Notify the results
+        script:
+          - pipe: atlassian/slack-notify:0.2.3
+            variables:
+              WEBHOOK_URL: $SLACK_URL
+              MESSAGE: 'Ran pipeline for $BITBUCKET_REPO_FULL_NAME branch: $BITBUCKET_BRANCH'
+
+pipelines:
+
+  # all branches EXCECPT master, develop, staging
+  # only builds the dist
+  # does NOTHING else
+  default:
+    - step: *build
+
+  branches:
+
+    develop:
+      - step: *build
+      - step:
+          name: Deploy to Develop
+          script:
+            - cp serverless-dev.yml serverless.yml
+            - npm install -g npm@latest
+            - npm install -g serverless serverless-lift
+            - serverless config credentials --provider aws --key $AWS_ACCESS_KEY_SERVERLESS --secret $AWS_SECRET_SERVERLESS
+            - serverless deploy --stage dev
+      - step: *notify
+
+    master:
+      - step: *build
+      - step:
+          name: Deploy to Production
+          script:
+            - cp serverless-prod.yml serverless.yml
+            - npm install -g npm@latest
+            - npm install -g serverless serverless-lift
+            - serverless config credentials --provider aws --key $AWS_ACCESS_KEY_SERVERLESS --secret $AWS_SECRET_SERVERLESS
+            - serverless deploy --stage prod
+      - step:
+          name: Deploy Redirect
+          script:
+            - cp serverless-redirect.yml serverless.yml
+            - cp dist/redirect.html dist/index.html
+            - npm install -g npm@latest
+            - npm install -g serverless serverless-lift
+            - serverless config credentials --provider aws --key $AWS_ACCESS_KEY_SERVERLESS --secret $AWS_SECRET_SERVERLESS
+            - serverless deploy --stage redirect
+      - step: *notify
+
+
+
+    # staging branch deployment
+    staging:
+      - step: *build
+      - step:
+          name: Deploy to Staging
+          script:
+            - cp serverless-stage.yml serverless.yml
+            - npm install -g npm@latest
+            - npm install -g serverless serverless-lift
+            - serverless config credentials --provider aws --key $AWS_ACCESS_KEY_SERVERLESS --secret $AWS_SECRET_SERVERLESS
+            - serverless deploy --stage staging
+      - step: *notify
