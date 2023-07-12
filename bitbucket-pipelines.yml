@@ -11,22 +11,22 @@ definitions:
 #          - npm run build
           - mkdir dist
           - cp *.html dist/
-          - mv img dist/
-          - mv downloads dist/
-          - mv google-map dist/
-          - cp *.css dist/
-          - cp robots.txt dist/
-          - cp sitemap.xml dist/
-          - mv MyFontsWebfontsKit dist/
+#          - mv img dist/
+#          - mv downloads dist/
+#          - mv google-map dist/
+#          - cp *.css dist/
+#          - cp robots.txt dist/
+#          - cp sitemap.xml dist/
+#          - mv MyFontsWebfontsKit dist/
         artifacts:
           - dist/**
-    - step: &notify
-        name: Notify the results
-        script:
-          - pipe: atlassian/slack-notify:0.2.3
-            variables:
-              WEBHOOK_URL: $SLACK_URL
-              MESSAGE: 'Ran pipeline for $BITBUCKET_REPO_FULL_NAME branch: $BITBUCKET_BRANCH'
+#          - step: &notify
+#        name: Notify the results
+#        script:
+#          - pipe: atlassian/slack-notify:0.2.3
+#            variables:
+#              WEBHOOK_URL: $SLACK_URL
+#              MESSAGE: 'Ran pipeline for $BITBUCKET_REPO_FULL_NAME branch: $BITBUCKET_BRANCH'
 
 pipelines:
 
@@ -48,7 +48,7 @@ pipelines:
             - npm install -g serverless serverless-lift
             - serverless config credentials --provider aws --key $AWS_ACCESS_KEY_SERVERLESS --secret $AWS_SECRET_SERVERLESS
             - serverless deploy --stage dev
-      - step: *notify
+#      - step: *notify
 
     master:
       - step: *build

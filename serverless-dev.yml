@@ -1,4 +1,4 @@
-service: resolutestudy-com
+service: serverlesss-one
 
 provider:
   name: aws
@@ -12,8 +12,8 @@ constructs:
   static-site-prod:
     type: static-website
     path: 'dist/'
-    domain: dev.resolutestudy.com
-    certificate: arn:aws:acm:us-east-1:949852668664:certificate/f12ad0af-6b7c-48f6-aa58-c4593af58e89
+    domain: dev.serverlesss.one
+    certificate: arn:aws:acm:us-east-1:208963202029:certificate/913bf7f0-9ca3-4f74-9b5a-d75bba90fca3
     security:
       allowIframe: true
     extensions: {
