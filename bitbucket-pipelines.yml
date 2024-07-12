@@ -47,7 +47,7 @@ pipelines:
             - npm install -g npm@latest
             - npm install -g serverless@3 serverless-lift
             #- serverless login
-            - serverless config credentials --provider aws --key {$AWS_ACCESS_KEY_SERVERLESS} --secret {$AWS_SECRET_SERVERLESS} --debug
+            - serverless config credentials --provider aws --key $AWS_ACCESS_KEY_SERVERLESS --secret $AWS_SECRET_SERVERLESS
             - serverless deploy --stage dev
 #      - step: *notify
 
