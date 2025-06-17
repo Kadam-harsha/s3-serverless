@@ -13,7 +13,7 @@ constructs:
     type: static-website
     path: 'dist/'
     domain: test.serverless.homes
-    certificate: arn:aws:acm:ap-south-1:677276102031:certificate/b55560ee-5a38-467e-b332-0640d17cd2e4
+    certificate: arn:aws:acm:us-east-1:677276102031:certificate/e1faef56-432d-4dfe-8fc8-5010e2ebf608
     security:
       allowIframe: true
     extensions: {
