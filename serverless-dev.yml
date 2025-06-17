@@ -1,4 +1,4 @@
-service: serverlesss-one
+service: serverlesshomes
 
 provider:
   name: aws
@@ -12,8 +12,8 @@ constructs:
   static-site-prod:
     type: static-website
     path: 'dist/'
-    domain: dev.serverlesss.one
-    certificate: arn:aws:acm:us-east-1:208963202029:certificate/913bf7f0-9ca3-4f74-9b5a-d75bba90fca3
+    domain: test.serverless.homes
+    certificate: arn:aws:acm:ap-south-1:677276102031:certificate/b55560ee-5a38-467e-b332-0640d17cd2e4
     security:
       allowIframe: true
     extensions: {
